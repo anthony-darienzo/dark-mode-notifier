@@ -98,5 +98,14 @@ let themeObserver = DistributedNotificationCenter.default.addObserver(
             notifyNeovim()
     }
 )
+let wakeObserver = DistributedNotificationCenter.default.addObserver(
+    forName: NSWorkspace.didWakeNotification, 
+    object: nil,
+    queue: nil, 
+    using: { 
+        (Notification) -> Void in
+            notifyNeovim()
+    }
+)
 
 NSApplication.shared.run()
