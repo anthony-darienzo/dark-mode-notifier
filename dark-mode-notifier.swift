@@ -17,6 +17,7 @@ import os.log
 let ARGUMENTS = CommandLine.arguments
 let CONFIG_PATH = ARGUMENTS[1]
 let NEOVIM_NOTIFY = ARGUMENTS[2]
+let NOTIFY_ARGS = Array(ARGUMENTS[3...])
 
 let mainLog = Logger(
     subsystem:"local.dark-mode-notifier",
@@ -46,14 +47,14 @@ func updateConfigPath() {
 }
 
 func notifyNeovim() {
-    let notify_url = URL(fileURLWithPath: NEOVIM_NOTIFY)
     let task = Process()
     let pipe = Pipe()
 
     task.standardOutput = pipe
     task.standardError  = pipe
     task.standardInput  = nil
-    task.executableURL = notify_url
+    task.launchPath = NEOVIM_NOTIFY
+    task.arguments = NOTIFY_ARGS
 
     try? task.run()
 
@@ -75,15 +76,6 @@ let themeObserver = DistributedNotificationCenter.default.addObserver(
         (Notification) -> Void in
             mainLog.info("local.dark-mode-notifier detected theme change!")
             updateConfigPath()
-            notifyNeovim()
-    }
-)
-let wakeObserver = DistributedNotificationCenter.default.addObserver(
-    forName: NSWorkspace.didWakeNotification, 
-    object: nil,
-    queue: nil, 
-    using: { 
-        (Notification) -> Void in
             notifyNeovim()
     }
 )
