@@ -46,15 +46,8 @@ struct Notifier: ParsableCommand {
         
         @OptionGroup var options: Options
         
-        func getConfigURL() -> URL {
-            let xdg_config_home = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"] ?? "~/.config/"
-            let config_path = options.config ?? "\(xdg_config_home)/\(APP_NAME)/\(DEFAULT_CONFIG_NAME)"
-            return URL(fileURLWithPath: config_path)
-        }
-        
         mutating func run() throws {
             let ctx = ProgramContext(config_path: options.config, log_type: LoggerType.OSLOG)
-            print(ctx.configURL)
             ctx.parseUpdateItems()
             ctx.update()
             
@@ -121,7 +114,7 @@ class ProgramContext {
         var newUpdateItems : [UpdateItem] = []
         
         if !FileManager.default.fileExists(atPath: absPath) {
-            throw "Config file not found! Try running `dark-mode-notifier generate-config`."
+            throw "Config file (at \"\(absPath)\" not found! Try running `dark-mode-notifier generate-config`."
         }
         
         let toml = try Toml(contentsOfFile: absPath)
@@ -292,8 +285,9 @@ func setupLogging(type: LoggerType) throws -> Logger {
 
 func getConfigURL(config_path: String?) -> URL {
     let xdg_config_home = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"] ?? "~/.config/"
+    let p = config_path ?? "\(xdg_config_home)/\(APP_NAME)/\(DEFAULT_CONFIG_NAME)"
     return URL(
-        fileURLWithPath: config_path ?? "\(xdg_config_home)/\(APP_NAME)/\(DEFAULT_CONFIG_NAME)"
+        fileURLWithPath: NSString(string: p).expandingTildeInPath
     )
 }
 
